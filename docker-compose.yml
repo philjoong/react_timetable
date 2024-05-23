@@ -1,0 +1,34 @@
+version: '3.8'
+services:
+  redis-host:
+      image: redis
+      volumes:
+        - /redis/servers/:/data
+      networks:
+        - mynetwork
+  myexpressserver:
+    build: 
+      context: ./server
+    networks:
+      - mynetwork
+    ports:
+      - "3002:3002"
+    environment:
+      REDIS_HOST: redis-host
+    depends_on:
+      - redis-host
+
+  myreactapp:
+    build: 
+      context: ./client
+      args:
+        REACT_APP_SERVER_URL: http://myexpressserver:3002
+    ports:
+      - "80:80"
+    depends_on:
+      - myexpressserver
+    networks:
+      - mynetwork
+    
+networks:
+  mynetwork:
